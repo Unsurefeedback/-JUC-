@@ -61,6 +61,7 @@ class TwoPhaseTermination {
     }
 }
 
+// 这个是基础版的，没有用上volatile
 @Slf4j(topic = "c.TwoPhaseTermination_base")
 class TwoPhaseTermination_base {
     // 监控线程
