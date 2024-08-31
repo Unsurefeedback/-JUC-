@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,21 +22,27 @@ public class TestWordCount {
                 // 创建 map 集合
                 // 创建 ConcurrentHashMap 对不对？
                 () -> new ConcurrentHashMap<String, LongAdder>(8,0.75f,8),
-
                 (map, words) -> {
                     for (String word : words) {
-
                         // 如果缺少一个 key，则计算生成一个 value , 然后将  key value 放入 map
-                        //                  a      0
+                        // concurrentHashMap 中的 computeIfAbsent 方法锁住的是 ReservationNode,锁粒度更小
                         LongAdder value = map.computeIfAbsent(word, (key) -> new LongAdder());
                         // 执行累加
-                        value.increment(); // 2
-
-                        /*// 检查 key 有没有
+                        value.increment();
+                    }
+                }
+        );
+        // 下面的代码是会出现计数错误的,正确计数应该是所有字母都是200个
+        // concurrentHashMap 可以保证 get 方法和 put 方法单独执行是原子的，现在for循环先 get 后 put,无法保证原子性
+        demo(
+                ()->new HashMap<String,Integer>(),
+                (map,words)->{
+                    for (String word: words) {
+                        // 检查 key 有没有
                         Integer counter = map.get(word);
                         int newValue = counter == null ? 1 : counter + 1;
                         // 没有 则 put
-                        map.put(word, newValue);*/
+                        map.put(word, newValue);
                     }
                 }
         );
